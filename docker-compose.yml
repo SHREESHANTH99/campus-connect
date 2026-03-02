@@ -18,7 +18,13 @@ services:
     container_name: campus_redis
     ports:
       - "6379:6379"
-
+  frontend:
+    build: ./frontend
+    container_name: campus_frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
   backend:
     build: .
     container_name: campus_backend
