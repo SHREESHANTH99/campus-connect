@@ -12,7 +12,15 @@ from alembic import context
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from app.core.config import settings
-from app.db.base import Base   # imports all models via base.py
+from app.db.base import Base
+
+# Import all models so Alembic can discover them for autogenerate
+from app.models.user import User              # noqa: F401
+from app.models.confession import Confession  # noqa: F401
+from app.models.comment import Comment        # noqa: F401
+from app.models.vote import Vote              # noqa: F401
+from app.models.report import Report          # noqa: F401
+from app.models.chat_session import ChatSession  # noqa: F401
 
 # ── Alembic config object ────────────────────────────────────────────────────
 config = context.config
