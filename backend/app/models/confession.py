@@ -88,7 +88,7 @@ class Confession(Base):
         DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
     )
 
-    # ── Relationships ─────────────────────────────────────────────────────────
+    # ── Relationships 
     comments = relationship("Comment", backref="confession", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
