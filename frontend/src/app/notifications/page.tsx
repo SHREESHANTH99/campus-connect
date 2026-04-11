@@ -1,8 +1,8 @@
 "use client";
 // src/app/notifications/page.tsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-import { NOTIFICATIONS } from "@/lib/mock-data";
+import { api } from "@/lib/api";
 
 const ParticleField = dynamic(
   () => import("@/components/3d/ParticleField").then(m => ({ default: m.ParticleField })),
@@ -19,15 +19,46 @@ const TYPE_META: Record<string,{color:string;Icon:()=>React.ReactElement}> = {
 };
 
 export default function NotificationsPage() {
-  const [items, setItems] = useState(NOTIFICATIONS);
-  const unreadCount = items.filter(n=>n.unread).length;
+  const [items, setItems] = useState<any[]>([]);
 
-  function markAllRead() {
-    setItems(prev => prev.map(n => ({...n, unread:false})));
+  useEffect(() => {
+    let active = true;
+    api.notifications
+      .list()
+      .then((rows) => {
+        if (!active) return;
+        setItems(rows);
+      })
+      .catch(() => {
+        if (!active) return;
+        setItems([]);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const unreadCount = items.filter(n => !n.is_read).length;
+
+  async function markAllRead() {
+    const snap = [...items];
+    setItems(prev => prev.map(n => ({...n, is_read: true})));
+    try {
+      await api.notifications.readAll();
+    } catch {
+      setItems(snap);
+    }
   }
 
-  function markRead(id: number) {
-    setItems(prev => prev.map(n => n.id===id ? {...n,unread:false} : n));
+  async function markRead(id: string) {
+    const snap = [...items];
+    setItems(prev => prev.map(n => n.id===id ? {...n, is_read: true} : n));
+    try {
+      await api.notifications.readOne(id);
+    } catch {
+      setItems(snap);
+    }
   }
 
   return (
@@ -51,16 +82,16 @@ export default function NotificationsPage() {
         {items.map(n => {
           const meta = TYPE_META[n.type] ?? TYPE_META.event;
           return (
-            <div key={n.id} className={`notif-item ${n.unread?"unread":""}`} onClick={()=>markRead(n.id)}>
+            <div key={n.id} className={`notif-item ${!n.is_read?"unread":""}`} onClick={()=>void markRead(n.id)}>
               <div className="notif-icon-wrap" style={{background:`${meta.color}18`,border:`1px solid ${meta.color}25`,color:meta.color}}>
                 <meta.Icon />
               </div>
               <div style={{flex:1}}>
                 <div className="notif-title">{n.title}</div>
-                <div className="notif-msg">{n.msg}</div>
-                <div className="notif-time">{n.time}</div>
+                <div className="notif-msg">{n.message}</div>
+                <div className="notif-time">{new Date(n.created_at).toLocaleString()}</div>
               </div>
-              {n.unread && (
+              {!n.is_read && (
                 <div style={{width:8,height:8,borderRadius:"50%",background:"var(--indigo)",flexShrink:0,marginTop:4,boxShadow:"0 0 6px var(--indigo-glow)"}} />
               )}
             </div>

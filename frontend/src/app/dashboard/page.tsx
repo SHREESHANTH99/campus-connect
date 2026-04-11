@@ -1,8 +1,9 @@
 "use client";
 // src/app/dashboard/page.tsx
 import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
-import { DASHBOARD_STATS, ACTIVITY_FEED, EVENTS, MOCK_USER } from "@/lib/mock-data";
+import { api } from "@/lib/api";
 
 const GlowingOrb = dynamic(
   () => import("@/components/3d/GlowingOrb").then(m => ({ default: m.GlowingOrb })),
@@ -11,8 +12,77 @@ const GlowingOrb = dynamic(
 
 const ICON_COLORS = ["#6366F1","#8B5CF6","#10B981","#F59E0B"];
 
+function categoryColor(category: string) {
+  const map: Record<string, string> = {
+    Hackathon: "#6366F1",
+    Workshop: "#06B6D4",
+    Sports: "#10B981",
+    Cultural: "#F59E0B",
+    Tech: "#8B5CF6",
+  };
+  return map[category] ?? "#818CF8";
+}
+
 export default function DashboardPage() {
-  const upcoming = EVENTS.slice(0, 4);
+  const [me, setMe] = useState<any>(null);
+  const [events, setEvents] = useState<any[]>([]);
+  const [clubs, setClubs] = useState<any[]>([]);
+  const [notifs, setNotifs] = useState<any[]>([]);
+  const [confessions, setConfessions] = useState<any[]>([]);
+
+  useEffect(() => {
+    let active = true;
+    Promise.all([
+      api.profile.me().catch(() => null),
+      api.events.list({ limit: 4 }).catch(() => []),
+      api.clubs.list({ limit: 20 }).catch(() => []),
+      api.notifications.list().catch(() => []),
+      api.confessions.feed({ limit: 20 }).catch(() => ({ items: [] })),
+    ]).then(([meResp, eventsResp, clubsResp, notifResp, confResp]) => {
+      if (!active) return;
+      setMe(meResp);
+      setEvents(eventsResp);
+      setClubs(clubsResp);
+      setNotifs(notifResp);
+      setConfessions(confResp.items ?? []);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const upcoming = useMemo(
+    () =>
+      events.map((ev) => ({
+        ...ev,
+        color: categoryColor(ev.category),
+        date: new Date(ev.start_time).toLocaleDateString(),
+        isRSVPd: !!ev.is_rsvpd,
+      })),
+    [events]
+  );
+
+  const stats = useMemo(
+    () => [
+      { label: "Upcoming Events", value: String(events.length), trend: "+live", up: true },
+      { label: "Joined Clubs", value: String(clubs.length), trend: "+live", up: true },
+      { label: "Unread Alerts", value: String(notifs.filter((n) => !n.is_read).length), trend: "auto", up: null },
+      { label: "Karma", value: String(me?.karma ?? 0), trend: "+0", up: true },
+    ],
+    [events.length, clubs.length, notifs, me?.karma]
+  );
+
+  const activity = useMemo(
+    () =>
+      notifs.slice(0, 5).map((n) => ({
+        id: n.id,
+        text: n.title,
+        time: new Date(n.created_at).toLocaleString(),
+        color: "#6366F1",
+      })),
+    [notifs]
+  );
 
   return (
     <div>
@@ -26,7 +96,7 @@ export default function DashboardPage() {
         </div>
         <div className="dashboard-hero-content">
           <div className="dashboard-greeting">
-            Good evening, <em>{MOCK_USER.name.split(" ")[0]}</em>
+            Good evening, <em>{(me?.anonymous_username ?? "Student").split("_")[0]}</em>
           </div>
           <div className="dashboard-date">
             {new Date().toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long",year:"numeric"})}
@@ -40,7 +110,7 @@ export default function DashboardPage() {
 
       {/* Stats */}
       <div className="stats-grid">
-        {DASHBOARD_STATS.map((s,i)=>(
+        {stats.map((s,i)=>(
           <div key={s.label} className="stat-card">
             <div className="stat-card-top">
               <div className="stat-card-icon" style={{background:`${ICON_COLORS[i]}18`}}>
@@ -91,17 +161,18 @@ export default function DashboardPage() {
             <div className="widget-title">Activity</div>
           </div>
           <div>
-            {ACTIVITY_FEED.map(item=>(
+            {activity.map(item=>(
               <div key={item.id} className="activity-item">
                 <div className="activity-av" style={{background:`${item.color}18`,color:item.color,border:`1px solid ${item.color}30`}}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg>
                 </div>
                 <div>
-                  <div className="activity-text" dangerouslySetInnerHTML={{__html:item.text}} />
+                  <div className="activity-text">{item.text}</div>
                   <div className="activity-time">{item.time}</div>
                 </div>
               </div>
             ))}
+            {activity.length === 0 && <div style={{color:"var(--t3)",fontSize:13}}>No recent activity yet.</div>}
           </div>
         </div>
       </div>

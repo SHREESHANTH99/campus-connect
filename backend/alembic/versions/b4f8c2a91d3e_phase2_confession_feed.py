@@ -20,7 +20,7 @@ from sqlalchemy.dialects import postgresql
 # It looks like: a1b2c3d4e5f6
 
 revision = "b4f8c2a91d3e"
-down_revision = "REPLACE_WITH_PHASE1_REVISION_ID"
+down_revision = "1fb888bd0696"
 branch_labels = None
 depends_on = None
 

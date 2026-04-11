@@ -60,4 +60,66 @@ export const api = {
         "/auth/verify-otp", { method: "POST", body: JSON.stringify({ phone, otp }) }),
     me: () => req<{ id: string; anonymous_username: string; karma: number }>("/auth/me", {}, true),
   },
+  events: {
+    list: (p: { category?: string; search?: string; sort?: string; cursor?: string; limit?: number } = {}) => {
+      const q = new URLSearchParams();
+      if (p.category) q.set("category", p.category);
+      if (p.search) q.set("search", p.search);
+      if (p.sort) q.set("sort", p.sort);
+      if (p.cursor) q.set("cursor", p.cursor);
+      if (p.limit) q.set("limit", String(p.limit));
+      return req<any[]>(`/events?${q}`);
+    },
+    get: (id: string) => req<any>(`/events/${id}`),
+    create: (body: any) => req<any>("/events/", { method: "POST", body: JSON.stringify(body) }, true),
+    rsvp: (id: string) => req<any>(`/events/${id}/rsvp`, { method: "POST" }, true),
+    attendees: (id: string, p: { cursor?: string; limit?: number } = {}) => {
+      const q = new URLSearchParams();
+      if (p.cursor) q.set("cursor", p.cursor);
+      if (p.limit) q.set("limit", String(p.limit));
+      return req<any[]>(`/events/${id}/attendees?${q}`);
+    },
+    update: (id: string, body: any) => req<any>(`/events/${id}`, { method: "PUT", body: JSON.stringify(body) }, true),
+    cancel: (id: string) => req<any>(`/events/${id}`, { method: "DELETE" }, true),
+  },
+  clubs: {
+    list: (p: { category?: string; search?: string; limit?: number } = {}) => {
+      const q = new URLSearchParams();
+      if (p.category) q.set("category", p.category);
+      if (p.search) q.set("search", p.search);
+      if (p.limit) q.set("limit", String(p.limit));
+      return req<any[]>(`/clubs?${q}`);
+    },
+    get: (id: string) => req<any>(`/clubs/${id}`),
+    create: (body: any) => req<any>("/clubs/", { method: "POST", body: JSON.stringify(body) }, true),
+    join: (id: string) => req<any>(`/clubs/${id}/join`, { method: "POST" }, true),
+    members: (id: string, p: { cursor?: string; limit?: number } = {}) => {
+      const q = new URLSearchParams();
+      if (p.cursor) q.set("cursor", p.cursor);
+      if (p.limit) q.set("limit", String(p.limit));
+      return req<any[]>(`/clubs/${id}/members?${q}`);
+    },
+    events: (id: string, limit = 20) => req<any[]>(`/clubs/${id}/events?limit=${limit}`),
+    update: (id: string, body: any) => req<any>(`/clubs/${id}`, { method: "PUT", body: JSON.stringify(body) }, true),
+  },
+  notifications: {
+    list: () => req<any[]>("/notifications/", {}, true),
+    readAll: () => req<any>("/notifications/read-all", { method: "POST" }, true),
+    readOne: (id: string) => req<any>(`/notifications/${id}/read`, { method: "PATCH" }, true),
+  },
+  polls: {
+    list: (limit = 20) => req<any[]>(`/polls?limit=${limit}`),
+    create: (body: { question: string; options: string[]; ends_at?: string }) =>
+      req<any>("/polls/", { method: "POST", body: JSON.stringify(body) }, true),
+    vote: (id: string, option_index: number) =>
+      req<any>(`/polls/${id}/vote`, { method: "POST", body: JSON.stringify({ option_index }) }, true),
+  },
+  profile: {
+    me: () => req<any>("/profile/me", {}, true),
+    updateMe: (body: { college_id?: string; branch?: string; year?: number; bio?: string }) =>
+      req<any>("/profile/me", { method: "PATCH", body: JSON.stringify(body) }, true),
+    myConfessions: () => req<any[]>("/profile/me/confessions", {}, true),
+    myEvents: () => req<any[]>("/profile/me/events", {}, true),
+    myClubs: () => req<any[]>("/profile/me/clubs", {}, true),
+  },
 };

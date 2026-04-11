@@ -1,15 +1,51 @@
 "use client";
 // src/app/settings/page.tsx
-import { useState } from "react";
-import { MOCK_USER } from "@/lib/mock-data";
+import { useEffect, useMemo, useState } from "react";
+import { api } from "@/lib/api";
 
 const SETTINGS_NAV = ["Account","Security","Notifications","Preferences"];
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState("Account");
-  const [name,  setName]  = useState(MOCK_USER.name);
-  const [email, setEmail] = useState(MOCK_USER.email);
+  const [profile, setProfile] = useState<any | null>(null);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [branch, setBranch] = useState("");
   const [notifs, setNotifs] = useState({ email:true, events:true, clubs:false, announcements:true, karma:true });
+
+  useEffect(() => {
+    let active = true;
+    api.profile
+      .me()
+      .then((me) => {
+        if (!active) return;
+        setProfile(me);
+        setName(me.anonymous_username ?? "");
+        setBranch(me.branch ?? "");
+      })
+      .catch(() => {
+        if (!active) return;
+        setProfile(null);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const initials = useMemo(() => {
+    if (!name) return "CC";
+    return name.slice(0, 2).toUpperCase();
+  }, [name]);
+
+  async function saveAccount() {
+    const updated = await api.profile.updateMe({ branch });
+    setProfile(updated);
+  }
+
+  if (!profile) {
+    return <div style={{ color: "var(--t3)", fontSize: 14 }}>Loading settings...</div>;
+  }
 
   return (
     <div style={{maxWidth:820}}>
@@ -36,9 +72,9 @@ export default function SettingsPage() {
                 <div className="settings-section-title">Profile</div>
                 <div className="settings-section-desc">Update your personal details.</div>
                 <div style={{display:"flex",alignItems:"center",gap:16,marginBottom:20,padding:"14px 16px",background:"var(--bg-3)",borderRadius:"var(--r)",border:"1px solid var(--b)"}}>
-                  <div style={{width:52,height:52,borderRadius:"50%",background:"linear-gradient(135deg,var(--indigo),var(--violet))",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"var(--serif)",fontSize:20,fontWeight:700,color:"white",boxShadow:"0 0 16px var(--indigo-glow)"}}>{MOCK_USER.initials}</div>
+                  <div style={{width:52,height:52,borderRadius:"50%",background:"linear-gradient(135deg,var(--indigo),var(--violet))",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"var(--serif)",fontSize:20,fontWeight:700,color:"white",boxShadow:"0 0 16px var(--indigo-glow)"}}>{initials}</div>
                   <div>
-                    <div style={{fontSize:13,fontWeight:600,color:"var(--t1)",marginBottom:2}}>{MOCK_USER.name}</div>
+                    <div style={{fontSize:13,fontWeight:600,color:"var(--t1)",marginBottom:2}}>{profile.anonymous_username}</div>
                     <button className="btn btn-ghost btn-sm">Change photo</button>
                   </div>
                 </div>
@@ -54,9 +90,9 @@ export default function SettingsPage() {
                 </div>
                 <div className="field-group">
                   <label className="field-label">Branch / Department</label>
-                  <input className="field-input" defaultValue={MOCK_USER.branch} />
+                  <input className="field-input" value={branch} onChange={e => setBranch(e.target.value)} />
                 </div>
-                <button className="btn btn-primary btn-md">Save Changes</button>
+                <button className="btn btn-primary btn-md" onClick={() => void saveAccount()}>Save Changes</button>
               </div>
 
               <div className="settings-section">

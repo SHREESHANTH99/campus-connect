@@ -3,12 +3,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import auth, confessions, chat, polls
+from app.api import auth, confessions, chat, polls, events, clubs, notifications, profile
+from app.core.config import settings
 
 app = FastAPI(
     title="Campus Connect API",
-    description="Anonymous social hub for engineering students — Phase 1",
-    version="1.0.0",
+    description="Anonymous social hub for engineering students — Phase 3",
+    version="3.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
 )
@@ -17,7 +18,7 @@ app = FastAPI(
 # Adjust origins for production — lock down to your frontend domain
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "https://campusconnect.in"],
+    allow_origins=[origin.strip() for origin in settings.CORS_ORIGINS.split(",") if origin.strip()],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -28,6 +29,10 @@ app.include_router(auth.router,        prefix="/api")
 app.include_router(confessions.router, prefix="/api")
 app.include_router(chat.router,        prefix="/api")
 app.include_router(polls.router,       prefix="/api")
+app.include_router(events.router,      prefix="/api")
+app.include_router(clubs.router,       prefix="/api")
+app.include_router(notifications.router, prefix="/api")
+app.include_router(profile.router,     prefix="/api")
 
 
 # ── Health check ─────────────────────────────────────────────────────────────

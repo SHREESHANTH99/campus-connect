@@ -15,6 +15,12 @@ class UserStatus(str, enum.Enum):
     suspended = "suspended"
 
 
+class UserRole(str, enum.Enum):
+    student = "student"
+    club_admin = "club_admin"
+    organizer = "organizer"
+
+
 class User(Base):
     __tablename__ = "users"
 
@@ -34,12 +40,19 @@ class User(Base):
     # Verified via college email domain (future). Nullable until verified.
     college_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
     college_email_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    branch: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    year: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    bio: Mapped[str | None] = mapped_column(String(240), nullable=True)
 
     # ── Account health ───────────────────────────────────────────────────────
     karma: Mapped[int] = mapped_column(Integer, default=100, nullable=False)
+    role: Mapped[UserRole] = mapped_column(
+        PgEnum(UserRole, name="user_role"), default=UserRole.student, nullable=False
+    )
     status: Mapped[UserStatus] = mapped_column(
         PgEnum(UserStatus, name="user_status"), default=UserStatus.active, nullable=False
     )
+    is_active: Mapped[bool] = mapped_column(default=True, nullable=False)
 
     # ── Timestamps ───────────────────────────────────────────────────────────
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

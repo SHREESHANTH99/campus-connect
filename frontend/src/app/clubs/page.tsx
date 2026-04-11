@@ -1,18 +1,77 @@
 "use client";
 // src/app/clubs/page.tsx
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { CLUBS } from "@/lib/mock-data";
+import { api } from "@/lib/api";
 
 const CATS = ["All","Technical","Creative","Business","Sports"];
 
 export default function ClubsPage() {
   const [cat, setCat] = useState("All");
   const [search, setSearch] = useState("");
-  const filtered = CLUBS.filter(c =>
-    (cat === "All" || c.category === cat) &&
-    (!search || c.name.toLowerCase().includes(search.toLowerCase()))
-  );
+  const [items, setItems] = useState<any[]>([]);
+
+  useEffect(() => {
+    let active = true;
+    api.clubs
+      .list({ category: cat === "All" ? undefined : cat, search: search || undefined })
+      .then((rows) => {
+        if (!active) return;
+        setItems(rows);
+      })
+      .catch(() => {
+        if (!active) return;
+        setItems([]);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [cat, search]);
+
+  const filtered = useMemo(() => {
+    return items.map((club) => ({
+      ...club,
+      initials: club.name
+        .split(" ")
+        .map((w: string) => w[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase(),
+      color: "#6366F1",
+      textColor: "#818CF8",
+      members: club.member_count ?? 0,
+      events: club.event_count ?? 0,
+      founded: club.founded_year ?? "-",
+      isJoined: !!club.is_joined,
+    }));
+  }, [items]);
+
+  async function toggleJoin(id: string) {
+    const snap = [...items];
+    setItems((curr) =>
+      curr.map((club) =>
+        club.id === id
+          ? {
+              ...club,
+              is_joined: !club.is_joined,
+              member_count: Math.max(0, (club.member_count ?? 0) + (club.is_joined ? -1 : 1)),
+            }
+          : club
+      )
+    );
+
+    try {
+      const res = await api.clubs.join(id);
+      setItems((curr) =>
+        curr.map((club) =>
+          club.id === id ? { ...club, is_joined: res.joined, member_count: res.member_count } : club
+        )
+      );
+    } catch {
+      setItems(snap);
+    }
+  }
 
   return (
     <div>
@@ -51,7 +110,10 @@ export default function ClubsPage() {
                 <button
                   className={`btn btn-sm ${club.isJoined?"btn-ghost":"btn-primary"}`}
                   style={{flexShrink:0}}
-                  onClick={e=>{e.preventDefault();}}
+                  onClick={e=>{
+                    e.preventDefault();
+                    void toggleJoin(club.id);
+                  }}
                 >
                   {club.isJoined ? "Joined" : "Join"}
                 </button>

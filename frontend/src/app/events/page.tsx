@@ -1,9 +1,9 @@
 "use client";
 // src/app/events/page.tsx
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { EVENTS } from "@/lib/mock-data";
+import { api } from "@/lib/api";
 
 const MiniOrb = dynamic(
   () => import("@/components/3d/GlowingOrb").then(m => ({ default: m.MiniOrb })),
@@ -12,14 +12,99 @@ const MiniOrb = dynamic(
 
 const CATS = ["All","Hackathon","Workshop","Sports","Cultural","Tech"];
 
+function categoryColor(category: string) {
+  const map: Record<string, string> = {
+    Hackathon: "#6366F1",
+    Workshop: "#06B6D4",
+    Sports: "#10B981",
+    Cultural: "#F59E0B",
+    Tech: "#8B5CF6",
+  };
+  return map[category] ?? "#818CF8";
+}
+
+function formatDate(dateLike: string) {
+  const d = new Date(dateLike);
+  return Number.isNaN(d.getTime()) ? "TBD" : d.toLocaleDateString();
+}
+
 export default function EventsPage() {
+  const [items, setItems] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [cat, setCat] = useState("All");
+  const [loading, setLoading] = useState(true);
 
-  const filtered = EVENTS.filter(e =>
-    (cat === "All" || e.category === cat) &&
-    (!search || e.title.toLowerCase().includes(search.toLowerCase()))
-  );
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    api.events
+      .list({ search: search || undefined, category: cat === "All" ? undefined : cat })
+      .then((rows) => {
+        if (!active) return;
+        setItems(rows);
+      })
+      .catch(() => {
+        if (!active) return;
+        setItems([]);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [search, cat]);
+
+  const filtered = useMemo(() => {
+    return items.map((ev) => ({
+      ...ev,
+      color: categoryColor(ev.category),
+      date: formatDate(ev.start_time),
+      attendees: ev.attendee_count ?? 0,
+      isRSVPd: !!ev.is_rsvpd,
+    }));
+  }, [items]);
+
+  async function toggleRsvp(id: string) {
+    const prev = filtered;
+    setItems((curr) =>
+      curr.map((ev) =>
+        ev.id === id
+          ? {
+              ...ev,
+              is_rsvpd: !ev.is_rsvpd,
+              attendee_count: Math.max(0, (ev.attendee_count ?? 0) + (ev.is_rsvpd ? -1 : 1)),
+            }
+          : ev
+      )
+    );
+
+    try {
+      const res = await api.events.rsvp(id);
+      setItems((curr) =>
+        curr.map((ev) =>
+          ev.id === id
+            ? {
+                ...ev,
+                is_rsvpd: res.attending,
+                attendee_count: res.attendee_count,
+              }
+            : ev
+        )
+      );
+    } catch {
+      setItems(prev.map(({ id, title, category, location, start_time, attendee_count, isRSVPd }) => ({
+        id,
+        title,
+        category,
+        location,
+        start_time,
+        attendee_count,
+        is_rsvpd: isRSVPd,
+      })));
+    }
+  }
 
   return (
     <div>
@@ -48,7 +133,7 @@ export default function EventsPage() {
         </div>
       </div>
 
-      {filtered.length === 0 ? (
+      {!loading && filtered.length === 0 ? (
         <div style={{textAlign:"center",padding:"80px 0",color:"var(--t2)"}}>
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{margin:"0 auto 16px",opacity:0.3}}><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
           <p style={{fontSize:15,marginBottom:12}}>No events found for "{search}"</p>
@@ -91,13 +176,25 @@ export default function EventsPage() {
                       <div className="av-count">+{ev.attendees}</div>
                     </div>
                     <button className="btn btn-sm btn-primary" onClick={e=>{e.preventDefault();}}>
-                      {ev.isRSVPd ? "Registered" : "RSVP"}
+                      <span
+                        onClick={(e) => {
+                          e.preventDefault();
+                          void toggleRsvp(ev.id);
+                        }}
+                      >
+                        {ev.isRSVPd ? "Registered" : "RSVP"}
+                      </span>
                     </button>
                   </div>
                 </div>
               </div>
             </Link>
           ))}
+          {loading && (
+            <div style={{padding:"40px 0",color:"var(--t3)",fontFamily:"var(--mono)",fontSize:12}}>
+              Loading events...
+            </div>
+          )}
         </div>
       )}
     </div>

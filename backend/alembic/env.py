@@ -21,6 +21,10 @@ from app.models.comment import Comment        # noqa: F401
 from app.models.vote import Vote              # noqa: F401
 from app.models.report import Report          # noqa: F401
 from app.models.chat_session import ChatSession  # noqa: F401
+from app.models.club import Club, ClubMembership  # noqa: F401
+from app.models.event import Event, EventRSVP  # noqa: F401
+from app.models.notification import Notification  # noqa: F401
+from app.models.poll import Poll, PollVote  # noqa: F401
 
 # ── Alembic config object ────────────────────────────────────────────────────
 config = context.config
