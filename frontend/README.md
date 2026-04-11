@@ -1,4 +1,4 @@
-# Campus Connect — Frontend Installation Guide
+# NyxWall — Frontend Installation Guide
 
 ## Prerequisites
 
@@ -14,7 +14,7 @@ Make sure these are installed before starting.
 
 ## Step 1 — Extract the zip
 
-Download `campus-connect-frontend-v3.zip` and extract it. You will get a folder called `cc-v3`.
+Download `nyxwall-frontend-v3.zip` and extract it. You will get a folder called `nw-v3`.
 
 ---
 
@@ -22,27 +22,27 @@ Download `campus-connect-frontend-v3.zip` and extract it. You will get a folder 
 
 Your project already has a `frontend/` folder from Phase 1. Replace its `src/` folder entirely.
 ```
-Campus-Connect/
-  campus-connect/
+NyxWall/
+  nyxwall/
     backend/          ← leave this alone
     frontend/
-      src/            ← DELETE this folder, replace with cc-v3/src/
+      src/            ← DELETE this folder, replace with nw-v3/src/
       .next/          ← delete this too (will be regenerated)
 ```
 
 In PowerShell:
 ```powershell
-cd campus-connect\frontend
+cd nyxwall\frontend
 Remove-Item -Recurse -Force src
 Remove-Item -Recurse -Force .next
-Copy-Item -Recurse "C:\path\to\cc-v3\src" "."
+Copy-Item -Recurse "C:\path\to\nw-v3\src" "."
 ```
 
 ---
 
 ## Step 3 — Fix postcss.config.mjs
 
-Open `campus-connect\frontend\postcss.config.mjs` and replace the entire content with:
+Open `nyxwall\frontend\postcss.config.mjs` and replace the entire content with:
 ```js
 const config = { plugins: { autoprefixer: {} } };
 export default config;
@@ -54,7 +54,7 @@ This removes the broken Tailwind v4 reference that causes the compile error.
 
 ## Step 4 — Fix next.config.js
 
-Open or create `campus-connect\frontend\next.config.js` and make sure it contains:
+Open or create `nyxwall\frontend\next.config.js` and make sure it contains:
 ```js
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -69,7 +69,7 @@ The `transpilePackages: ["three"]` line is required for Three.js to work with Ne
 
 ## Step 5 — Create .env.local
 
-Inside `campus-connect\frontend\` create a new file called `.env.local`:
+Inside `nyxwall\frontend\` create a new file called `.env.local`:
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:8000/api
 ```
@@ -78,7 +78,7 @@ NEXT_PUBLIC_API_URL=http://localhost:8000/api
 
 ## Step 6 — Install dependencies
 ```powershell
-cd campus-connect\frontend
+cd nyxwall\frontend
 npm install
 ```
 
@@ -131,14 +131,14 @@ Open two PowerShell windows side by side.
 
 **Window 1 — Backend:**
 ```powershell
-cd campus-connect
+cd nyxwall
 .venv\Scripts\Activate.ps1
 uvicorn app.main:app --reload --port 8000
 ```
 
 **Window 2 — Frontend:**
 ```powershell
-cd campus-connect\frontend
+cd nyxwall\frontend
 npm run dev
 ```
 

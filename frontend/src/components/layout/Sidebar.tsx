@@ -83,14 +83,14 @@ export function Sidebar({ collapsed, open, onClose, onToggle }: {
       <aside className={`sidebar ${collapsed ? "collapsed" : ""} ${open ? "open" : ""}`}>
         {/* Logo */}
         <div className="sidebar-logo">
-          <Link href="/" className="logo-glyph" onClick={onClose} title="Campus Connect" style={{ textDecoration: "none" }}>
+          <Link href="/" className="logo-glyph" onClick={onClose} title="NyxWall" style={{ textDecoration: "none" }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
               <path d="M2 20h20M4 20V8l8-6 8 6v12M10 20v-6h4v6" />
             </svg>
           </Link>
           {!collapsed && (
             <div className="logo-wordmark">
-              <div className="logo-name">Campus Connect</div>
+              <div className="logo-name">NyxWall</div>
               <div className="logo-tag">anonymous · unified</div>
             </div>
           )}

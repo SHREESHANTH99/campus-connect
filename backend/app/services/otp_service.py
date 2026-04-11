@@ -70,7 +70,7 @@ def send_otp_sms(phone: str, otp: str) -> None:
     from twilio.rest import Client
     client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
     client.messages.create(
-        body=f"Your Campus Connect OTP is: {otp}. Valid for 5 minutes.",
+        body=f"Your NyxWall OTP is: {otp}. Valid for 5 minutes.",
         from_=settings.TWILIO_PHONE_NUMBER,
         to=phone,
     )

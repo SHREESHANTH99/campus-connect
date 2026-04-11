@@ -47,7 +47,7 @@ export default function LandingPage() {
         <div className="hero-left">
           <div className="hero-eyebrow">
             <span className="hero-dot" />
-            <span className="eyebrow">Campus Connect Neural Space</span>
+            <span className="eyebrow">NyxWall Neural Space</span>
           </div>
 
           <h1 className="hero-title">

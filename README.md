@@ -1,8 +1,8 @@
-# Campus Connect
+# NyxWall
 
 Anonymous, campus-first social platform built for students.
 
-Campus Connect combines confessions, events, clubs, polls, profile systems, and realtime chat into one developer-friendly full-stack project.
+NyxWall combines confessions, events, clubs, polls, profile systems, and realtime chat into one developer-friendly full-stack project.
 
 ## Why Developers Like This Repo
 
@@ -78,7 +78,7 @@ Campus Connect combines confessions, events, clubs, polls, profile systems, and 
 
 ```bash
 git clone <your-repo-url>
-cd campus-connect
+cd nyxwall
 ```
 
 ### 2. Start Core Services
@@ -123,8 +123,7 @@ python tests/integration/smoke_phase3.py
 ## Project Structure
 
 ```text
-campus-connect/
-	backend/
+nyxwall/
 		app/
 			api/
 			core/
@@ -174,6 +173,6 @@ High-impact areas open right now:
 
 ## Vision
 
-Campus Connect aims to be the default anonymous social layer for student communities: safe, engaging, and deeply campus-native.
+NyxWall aims to be the default anonymous social layer for student communities: safe, engaging, and deeply campus-native.
 
 If you enjoy building products that blend social UX, realtime systems, and moderation challenges, this is a great place to contribute.

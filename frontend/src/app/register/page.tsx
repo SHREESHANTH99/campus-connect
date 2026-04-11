@@ -131,7 +131,7 @@ export default function RegisterPage() {
           )}
           {step === 3 && (
             <>
-              <p style={{fontSize:13,color:"var(--t2)",marginBottom:16}}>How will you use Campus Connect?</p>
+              <p style={{fontSize:13,color:"var(--t2)",marginBottom:16}}>How will you use NyxWall?</p>
               <div className="role-cards">
                 {ROLES.map(r=>(
                   <div key={r.id} className={`role-card ${role===r.id?"selected":""}`} onClick={()=>setRole(r.id)}>

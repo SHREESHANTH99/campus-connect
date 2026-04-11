@@ -1,6 +1,6 @@
-# Campus Connect Backend
+# NyxWall Backend
 
-FastAPI-based backend for the Campus Connect platform with PostgreSQL, Redis, WebSockets, and Celery support.
+FastAPI-based backend for the NyxWall platform with PostgreSQL, Redis, WebSockets, and Celery support.
 
 ## Prerequisites
 
@@ -14,7 +14,7 @@ FastAPI-based backend for the Campus Connect platform with PostgreSQL, Redis, We
 ### 1. Clone and Navigate
 
 ```bash
-cd campus-connect/backend
+cd nyxwall/backend
 ```
 
 ### 2. Create Virtual Environment

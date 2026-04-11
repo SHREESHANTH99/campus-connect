@@ -7,7 +7,7 @@ from app.api import auth, confessions, chat, polls, events, clubs, notifications
 from app.core.config import settings
 
 app = FastAPI(
-    title="Campus Connect API",
+    title="NyxWall API",
     description="Anonymous social hub for engineering students — Phase 3",
     version="3.0.0",
     docs_url="/docs",

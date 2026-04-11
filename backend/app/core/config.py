@@ -6,11 +6,11 @@ from typing import Optional
 
 class Settings(BaseSettings):
     # App
-    APP_NAME: str = "Campus Connect"
+    APP_NAME: str = "NyxWall"
     DEBUG: bool = True
 
     # Database
-    DATABASE_URL: str = "postgresql://postgres:password@localhost:5432/campus_connect"
+    DATABASE_URL: str = "postgresql://postgres:password@localhost:5432/nyxwall"
 
     # Redis
     REDIS_URL: str = "redis://localhost:6379/0"
